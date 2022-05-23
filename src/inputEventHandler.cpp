@@ -13,10 +13,8 @@ inline void processAnimationEvent(RE::BSFixedString a_userEvent) {
 }
 
 
-inline void processMovementInputEvent(RE::InputEvent* a_event, RE::BSFixedString a_userEvent) {
-	//auto userEventHash = hash(static_cast<std::string>(a_userEvent));
-	auto userEventHash = hash(static_cast<std::string>(a_userEvent));
-	switch (userEventHash) {
+inline void tryTraceMovementInputEvent(RE::InputEvent* a_event, RE::BSFixedString a_userEvent) {
+	switch (hash(static_cast<std::string>(a_userEvent))) {
 	case "Forward"_h: movementInputTracer::GetSingleton()->onKeyBoardMovement(static_cast<RE::ButtonEvent*>(a_event), movementInputTracer::movementDirection::forward); break;
 	case "Back"_h: movementInputTracer::GetSingleton()->onKeyBoardMovement(static_cast<RE::ButtonEvent*>(a_event), movementInputTracer::movementDirection::back); break;
 	case "Strafe Right"_h: movementInputTracer::GetSingleton()->onKeyBoardMovement(static_cast<RE::ButtonEvent*>(a_event), movementInputTracer::movementDirection::right); break;
@@ -26,10 +24,8 @@ inline void processMovementInputEvent(RE::InputEvent* a_event, RE::BSFixedString
 			movementInputTracer::GetSingleton()->onThumbStickMovement(static_cast<RE::ThumbstickEvent*>(a_event)); break;
 		}
 	}
-
-
-
 }
+
 
 using EventType = RE::INPUT_EVENT_TYPE;
 using DeviceType = RE::INPUT_DEVICE;
@@ -54,8 +50,13 @@ EventResult inputEventHandler::ProcessEvent(RE::InputEvent* const* a_event, RE::
 			RE::ConsoleLog::GetSingleton()->Print(userEvent.c_str());
 		}
 
-		processMovementInputEvent(one_event, userEvent);
+		if (settings::bToggleMovementInputTrace) {
+			tryTraceMovementInputEvent(one_event, userEvent);
+		}
+		
+		if (one_event->GetEventType() == RE::INPUT_EVENT_TYPE::kButton) {
 
+		}
 		auto button = static_cast<RE::ButtonEvent*>(one_event);
 		if (button) {
 			auto key = button->idCode;

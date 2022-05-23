@@ -7,6 +7,7 @@ public:
 	
 	static void readSettings();
 	static inline bool bLogUserEvent = false;
+	static inline bool bToggleMovementInputTrace = true;
 
 	using userInputEvent = std::string;
 	using animationEvent = std::string;
@@ -24,10 +25,8 @@ public:
 	static inline robin_hood::unordered_map<buttonEvent, std::vector<RE::SpellItem*>*> keyTraceMap_b;
 	static inline robin_hood::unordered_map<buttonEvent, std::vector<RE::SpellItem*>*> spellCastingMap_b;
 private:
-	static bool readSimpleIni(CSimpleIniA& a_ini, const char* a_iniAddress);
 	static void readPluginSettings();
 	static void readCustomConfigs();
-	static void readMovementKeyTraceConfig();
 
 	static void ReadBoolSetting(CSimpleIniA& a_ini, const char* a_sectionName, const char* a_settingName, bool& a_setting);
 	static void ReadFloatSetting(CSimpleIniA& a_ini, const char* a_sectionName, const char* a_settingName, float& a_setting);

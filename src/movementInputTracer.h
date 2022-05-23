@@ -11,8 +11,8 @@ public:
 	};
 
 	movementInputTracer() {
-		thumbStickX = -99;
-		thumbStickY = -99;
+		prevThumbStickX = 0;
+		prevThumbStickY = 0;
 	}
 
 	static movementInputTracer* GetSingleton()
@@ -29,8 +29,8 @@ private:
 	inline void onBack(bool activate = true);
 	inline void onLeft(bool activate = true);
 	inline void onRight(bool activate = true);
-	float thumbStickX;
-	float thumbStickY;
+	float prevThumbStickX;
+	float prevThumbStickY;
 
 
 

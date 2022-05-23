@@ -1,4 +1,5 @@
 #include "inputEventHandler.h"
+#include "movementInputTracer.h"
 #include "settings.h"
 void MessageHandler(SKSE::MessagingInterface::Message* a_msg)
 {
@@ -7,6 +8,9 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_msg)
 		INFO("SKSEMsgInterface: dataLoaded");
 		inputEventHandler::Register();
 		settings::readSettings();
+		if (settings::bToggleMovementInputTrace) {
+			movementInputTracer::GetSingleton()->loadMovementTraceSpells();
+		}
 		break;
 	}
 }
