@@ -310,22 +310,22 @@ using SizeT = uint64_t;
 using SizeT = uint32_t;
 #endif
 
-template <typename T>
-T rotr(T x, unsigned k) {
-    return (x >> k) | (x << (8U * sizeof(T) - k));
+template <typename formType>
+formType rotr(formType x, unsigned k) {
+    return (x >> k) | (x << (8U * sizeof(formType) - k));
 }
 
 // This cast gets rid of warnings like "cast from 'uint8_t*' {aka 'unsigned char*'} to
 // 'uint64_t*' {aka 'long unsigned int*'} increases required alignment of target type". Use with
 // care!
-template <typename T>
-inline T reinterpret_cast_no_cast_align_warning(void* ptr) noexcept {
-    return reinterpret_cast<T>(ptr);
+template <typename formType>
+inline formType reinterpret_cast_no_cast_align_warning(void* ptr) noexcept {
+    return reinterpret_cast<formType>(ptr);
 }
 
-template <typename T>
-inline T reinterpret_cast_no_cast_align_warning(void const* ptr) noexcept {
-    return reinterpret_cast<T>(ptr);
+template <typename formType>
+inline formType reinterpret_cast_no_cast_align_warning(void const* ptr) noexcept {
+    return reinterpret_cast<formType>(ptr);
 }
 
 // make sure this is not inlined as it is slow and dramatically enlarges code, thus making other
@@ -343,27 +343,27 @@ template <typename E, typename... Args>
 }
 #endif
 
-template <typename E, typename T, typename... Args>
-T* assertNotNull(T* t, Args&&... args) {
+template <typename E, typename formType, typename... Args>
+formType* assertNotNull(formType* t, Args&&... args) {
     if (ROBIN_HOOD_UNLIKELY(nullptr == t)) {
         doThrow<E>(std::forward<Args>(args)...);
     }
     return t;
 }
 
-template <typename T>
-inline T unaligned_load(void const* ptr) noexcept {
+template <typename formType>
+inline formType unaligned_load(void const* ptr) noexcept {
     // using memcpy so we don't get into unaligned load problems.
     // compiler should optimize this very well anyways.
-    T t;
-    std::memcpy(&t, ptr, sizeof(T));
+    formType t;
+    std::memcpy(&t, ptr, sizeof(formType));
     return t;
 }
 
 // Allocates bulks of memory for objects of type T. This deallocates the memory in the destructor,
 // and keeps a linked list of the allocated memory around. Overhead per allocation is the size of a
 // pointer.
-template <typename T, size_t MinNumAllocs = 4, size_t MaxNumAllocs = 256>
+template <typename formType, size_t MinNumAllocs = 4, size_t MaxNumAllocs = 256>
 class BulkPoolAllocator {
 public:
     BulkPoolAllocator() noexcept = default;
@@ -403,10 +403,10 @@ public:
     // Deallocates all allocated memory.
     void reset() noexcept {
         while (mListForFree) {
-            T* tmp = *mListForFree;
+            formType* tmp = *mListForFree;
             ROBIN_HOOD_LOG("std::free")
             std::free(mListForFree);
-            mListForFree = reinterpret_cast_no_cast_align_warning<T**>(tmp);
+            mListForFree = reinterpret_cast_no_cast_align_warning<formType**>(tmp);
         }
         mHead = nullptr;
     }
@@ -414,13 +414,13 @@ public:
     // allocates, but does NOT initialize. Use in-place new constructor, e.g.
     //   T* obj = pool.allocate();
     //   ::new (static_cast<void*>(obj)) T();
-    T* allocate() {
-        T* tmp = mHead;
+    formType* allocate() {
+        formType* tmp = mHead;
         if (!tmp) {
             tmp = performAllocation();
         }
 
-        mHead = *reinterpret_cast_no_cast_align_warning<T**>(tmp);
+        mHead = *reinterpret_cast_no_cast_align_warning<formType**>(tmp);
         return tmp;
     }
 
@@ -428,8 +428,8 @@ public:
     // make sure you have already called the destructor! e.g. with
     //  obj->~T();
     //  pool.deallocate(obj);
-    void deallocate(T* obj) noexcept {
-        *reinterpret_cast_no_cast_align_warning<T**>(obj) = mHead;
+    void deallocate(formType* obj) noexcept {
+        *reinterpret_cast_no_cast_align_warning<formType**>(obj) = mHead;
         mHead = obj;
     }
 
@@ -448,7 +448,7 @@ public:
         }
     }
 
-    void swap(BulkPoolAllocator<T, MinNumAllocs, MaxNumAllocs>& other) noexcept {
+    void swap(BulkPoolAllocator<formType, MinNumAllocs, MaxNumAllocs>& other) noexcept {
         using std::swap;
         swap(mHead, other.mHead);
         swap(mListForFree, other.mListForFree);
@@ -464,7 +464,7 @@ private:
         size_t numAllocs = MinNumAllocs;
 
         while (numAllocs * 2 <= MaxNumAllocs && tmp) {
-            auto x = reinterpret_cast<T***>(tmp);
+            auto x = reinterpret_cast<formType***>(tmp);
             tmp = *x;
             numAllocs *= 2;
         }
@@ -476,16 +476,16 @@ private:
     void add(void* ptr, const size_t numBytes) noexcept {
         const size_t numElements = (numBytes - ALIGNMENT) / ALIGNED_SIZE;
 
-        auto data = reinterpret_cast<T**>(ptr);
+        auto data = reinterpret_cast<formType**>(ptr);
 
         // link free list
-        auto x = reinterpret_cast<T***>(data);
+        auto x = reinterpret_cast<formType***>(data);
         *x = mListForFree;
         mListForFree = data;
 
         // create linked list for newly allocated data
         auto* const headT =
-            reinterpret_cast_no_cast_align_warning<T*>(reinterpret_cast<char*>(ptr) + ALIGNMENT);
+            reinterpret_cast_no_cast_align_warning<formType*>(reinterpret_cast<char*>(ptr) + ALIGNMENT);
 
         auto* const head = reinterpret_cast<char*>(headT);
 
@@ -496,14 +496,14 @@ private:
         }
 
         // last one points to 0
-        *reinterpret_cast_no_cast_align_warning<T**>(head + (numElements - 1) * ALIGNED_SIZE) =
+        *reinterpret_cast_no_cast_align_warning<formType**>(head + (numElements - 1) * ALIGNED_SIZE) =
             mHead;
         mHead = headT;
     }
 
     // Called when no memory is available (mHead == 0).
     // Don't inline this slow path.
-    ROBIN_HOOD(NOINLINE) T* performAllocation() {
+    ROBIN_HOOD(NOINLINE) formType* performAllocation() {
         size_t const numElementsToAlloc = calcNumElementsToAlloc();
 
         // alloc new memory: [prev |T, T, ... T]
@@ -517,7 +517,7 @@ private:
     // enforce byte alignment of the T's
 #if ROBIN_HOOD(CXX) >= ROBIN_HOOD(CXX14)
     static constexpr size_t ALIGNMENT =
-        (std::max)(std::alignment_of<T>::value, std::alignment_of<T*>::value);
+        (std::max)(std::alignment_of<formType>::value, std::alignment_of<formType*>::value);
 #else
     static const size_t ALIGNMENT =
         (ROBIN_HOOD_STD::alignment_of<T>::value > ROBIN_HOOD_STD::alignment_of<T*>::value)
@@ -525,24 +525,24 @@ private:
             : +ROBIN_HOOD_STD::alignment_of<T*>::value; // the + is for walkarround
 #endif
 
-    static constexpr size_t ALIGNED_SIZE = ((sizeof(T) - 1) / ALIGNMENT + 1) * ALIGNMENT;
+    static constexpr size_t ALIGNED_SIZE = ((sizeof(formType) - 1) / ALIGNMENT + 1) * ALIGNMENT;
 
     static_assert(MinNumAllocs >= 1, "MinNumAllocs");
     static_assert(MaxNumAllocs >= MinNumAllocs, "MaxNumAllocs");
-    static_assert(ALIGNED_SIZE >= sizeof(T*), "ALIGNED_SIZE");
-    static_assert(0 == (ALIGNED_SIZE % sizeof(T*)), "ALIGNED_SIZE mod");
-    static_assert(ALIGNMENT >= sizeof(T*), "ALIGNMENT");
+    static_assert(ALIGNED_SIZE >= sizeof(formType*), "ALIGNED_SIZE");
+    static_assert(0 == (ALIGNED_SIZE % sizeof(formType*)), "ALIGNED_SIZE mod");
+    static_assert(ALIGNMENT >= sizeof(formType*), "ALIGNMENT");
 
-    T* mHead{nullptr};
-    T** mListForFree{nullptr};
+    formType* mHead{nullptr};
+    formType** mListForFree{nullptr};
 };
 
-template <typename T, size_t MinSize, size_t MaxSize, bool IsFlat>
+template <typename formType, size_t MinSize, size_t MaxSize, bool IsFlat>
 struct NodeAllocator;
 
 // dummy allocator that does nothing
-template <typename T, size_t MinSize, size_t MaxSize>
-struct NodeAllocator<T, MinSize, MaxSize, true> {
+template <typename formType, size_t MinSize, size_t MaxSize>
+struct NodeAllocator<formType, MinSize, MaxSize, true> {
 
     // we are not using the data, so just free it.
     void addOrFree(void* ptr, size_t ROBIN_HOOD_UNUSED(numBytes) /*unused*/) noexcept {
@@ -551,8 +551,8 @@ struct NodeAllocator<T, MinSize, MaxSize, true> {
     }
 };
 
-template <typename T, size_t MinSize, size_t MaxSize>
-struct NodeAllocator<T, MinSize, MaxSize, false> : public BulkPoolAllocator<T, MinSize, MaxSize> {};
+template <typename formType, size_t MinSize, size_t MaxSize>
+struct NodeAllocator<formType, MinSize, MaxSize, false> : public BulkPoolAllocator<formType, MinSize, MaxSize> {};
 
 // c++14 doesn't have is_nothrow_swappable, and clang++ 6.0.1 doesn't like it either, so I'm making
 // my own here.
@@ -564,9 +564,9 @@ struct nothrow {
     static const bool value = noexcept(swap(std::declval<T&>(), std::declval<T&>()));
 };
 #else
-template <typename T>
+template <typename formType>
 struct nothrow {
-    static const bool value = std::is_nothrow_swappable<T>::value;
+    static const bool value = std::is_nothrow_swappable<formType>::value;
 };
 #endif
 } // namespace swappable
@@ -759,12 +759,12 @@ inline size_t hash_int(uint64_t x) noexcept {
 }
 
 // A thin wrapper around std::hash, performing an additional simple mixing step of the result.
-template <typename T, typename Enable = void>
-struct hash : public std::hash<T> {
-    size_t operator()(T const& obj) const
-        noexcept(noexcept(std::declval<std::hash<T>>().operator()(std::declval<T const&>()))) {
+template <typename formType, typename Enable = void>
+struct hash : public std::hash<formType> {
+    size_t operator()(formType const& obj) const
+        noexcept(noexcept(std::declval<std::hash<formType>>().operator()(std::declval<formType const&>()))) {
         // call base hash
-        auto result = std::hash<T>::operator()(obj);
+        auto result = std::hash<formType>::operator()(obj);
         // return mixed of that, to be save against identity has
         return hash_int(static_cast<detail::SizeT>(result));
     }
@@ -786,23 +786,23 @@ struct hash<std::basic_string_view<CharT>> {
 };
 #endif
 
-template <class T>
-struct hash<T*> {
-    size_t operator()(T* ptr) const noexcept {
+template <class formType>
+struct hash<formType*> {
+    size_t operator()(formType* ptr) const noexcept {
         return hash_int(reinterpret_cast<detail::SizeT>(ptr));
     }
 };
 
-template <class T>
-struct hash<std::unique_ptr<T>> {
-    size_t operator()(std::unique_ptr<T> const& ptr) const noexcept {
+template <class formType>
+struct hash<std::unique_ptr<formType>> {
+    size_t operator()(std::unique_ptr<formType> const& ptr) const noexcept {
         return hash_int(reinterpret_cast<detail::SizeT>(ptr.get()));
     }
 };
 
-template <class T>
-struct hash<std::shared_ptr<T>> {
-    size_t operator()(std::shared_ptr<T> const& ptr) const noexcept {
+template <class formType>
+struct hash<std::shared_ptr<formType>> {
+    size_t operator()(std::shared_ptr<formType> const& ptr) const noexcept {
         return hash_int(reinterpret_cast<detail::SizeT>(ptr.get()));
     }
 };
@@ -815,10 +815,10 @@ struct hash<Enum, typename std::enable_if<std::is_enum<Enum>::value>::type> {
     }
 };
 
-#define ROBIN_HOOD_HASH_INT(T)                           \
+#define ROBIN_HOOD_HASH_INT(formType)                           \
     template <>                                          \
-    struct hash<T> {                                     \
-        size_t operator()(T const& obj) const noexcept { \
+    struct hash<formType> {                                     \
+        size_t operator()(formType const& obj) const noexcept { \
             return hash_int(static_cast<uint64_t>(obj)); \
         }                                                \
     }
@@ -850,32 +850,32 @@ ROBIN_HOOD_HASH_INT(unsigned long long);
 #endif
 namespace detail {
 
-template <typename T>
+template <typename formType>
 struct void_type {
     using type = void;
 };
 
-template <typename T, typename = void>
+template <typename formType, typename = void>
 struct has_is_transparent : public std::false_type {};
 
-template <typename T>
-struct has_is_transparent<T, typename void_type<typename T::is_transparent>::type>
+template <typename formType>
+struct has_is_transparent<formType, typename void_type<typename formType::is_transparent>::type>
     : public std::true_type {};
 
 // using wrapper classes for hash and key_equal prevents the diamond problem when the same type
 // is used. see https://stackoverflow.com/a/28771920/48181
-template <typename T>
-struct WrapHash : public T {
+template <typename formType>
+struct WrapHash : public formType {
     WrapHash() = default;
-    explicit WrapHash(T const& o) noexcept(noexcept(T(std::declval<T const&>())))
-        : T(o) {}
+    explicit WrapHash(formType const& o) noexcept(noexcept(formType(std::declval<formType const&>())))
+        : formType(o) {}
 };
 
-template <typename T>
-struct WrapKeyEqual : public T {
+template <typename formType>
+struct WrapKeyEqual : public formType {
     WrapKeyEqual() = default;
-    explicit WrapKeyEqual(T const& o) noexcept(noexcept(T(std::declval<T const&>())))
-        : T(o) {}
+    explicit WrapKeyEqual(formType const& o) noexcept(noexcept(formType(std::declval<formType const&>())))
+        : formType(o) {}
 };
 
 // A highly optimized hashmap implementation, using the Robin Hood algorithm.
@@ -904,28 +904,28 @@ struct WrapKeyEqual : public T {
 // According to STL, order of templates has effect on throughput. That's why I've moved the
 // boolean to the front.
 // https://www.reddit.com/r/cpp/comments/ahp6iu/compile_time_binary_size_reductions_and_cs_future/eeguck4/
-template <bool IsFlat, size_t MaxLoadFactor100, typename Key, typename T, typename Hash,
+template <bool IsFlat, size_t MaxLoadFactor100, typename Key, typename formType, typename Hash,
           typename KeyEqual>
 class Table
     : public WrapHash<Hash>,
       public WrapKeyEqual<KeyEqual>,
       detail::NodeAllocator<
           typename std::conditional<
-              std::is_void<T>::value, Key,
-              robin_hood::pair<typename std::conditional<IsFlat, Key, Key const>::type, T>>::type,
+              std::is_void<formType>::value, Key,
+              robin_hood::pair<typename std::conditional<IsFlat, Key, Key const>::type, formType>>::type,
           4, 16384, IsFlat> {
 public:
     static constexpr bool is_flat = IsFlat;
-    static constexpr bool is_map = !std::is_void<T>::value;
+    static constexpr bool is_map = !std::is_void<formType>::value;
     static constexpr bool is_set = !is_map;
     static constexpr bool is_transparent =
         has_is_transparent<Hash>::value && has_is_transparent<KeyEqual>::value;
 
     using key_type = Key;
-    using mapped_type = T;
+    using mapped_type = formType;
     using value_type = typename std::conditional<
         is_set, Key,
-        robin_hood::pair<typename std::conditional<is_flat, Key, Key const>::type, T>>::type;
+        robin_hood::pair<typename std::conditional<is_flat, Key, Key const>::type, formType>>::type;
     using size_type = size_t;
     using hasher = Hash;
     using key_equal = KeyEqual;
@@ -2506,21 +2506,21 @@ private:
 
 // map
 
-template <typename Key, typename T, typename Hash = hash<Key>,
+template <typename Key, typename formType, typename Hash = hash<Key>,
           typename KeyEqual = std::equal_to<Key>, size_t MaxLoadFactor100 = 80>
-using unordered_flat_map = detail::Table<true, MaxLoadFactor100, Key, T, Hash, KeyEqual>;
+using unordered_flat_map = detail::Table<true, MaxLoadFactor100, Key, formType, Hash, KeyEqual>;
 
-template <typename Key, typename T, typename Hash = hash<Key>,
+template <typename Key, typename formType, typename Hash = hash<Key>,
           typename KeyEqual = std::equal_to<Key>, size_t MaxLoadFactor100 = 80>
-using unordered_node_map = detail::Table<false, MaxLoadFactor100, Key, T, Hash, KeyEqual>;
+using unordered_node_map = detail::Table<false, MaxLoadFactor100, Key, formType, Hash, KeyEqual>;
 
-template <typename Key, typename T, typename Hash = hash<Key>,
+template <typename Key, typename formType, typename Hash = hash<Key>,
           typename KeyEqual = std::equal_to<Key>, size_t MaxLoadFactor100 = 80>
 using unordered_map =
-    detail::Table<sizeof(robin_hood::pair<Key, T>) <= sizeof(size_t) * 6 &&
-                      std::is_nothrow_move_constructible<robin_hood::pair<Key, T>>::value &&
-                      std::is_nothrow_move_assignable<robin_hood::pair<Key, T>>::value,
-                  MaxLoadFactor100, Key, T, Hash, KeyEqual>;
+    detail::Table<sizeof(robin_hood::pair<Key, formType>) <= sizeof(size_t) * 6 &&
+                      std::is_nothrow_move_constructible<robin_hood::pair<Key, formType>>::value &&
+                      std::is_nothrow_move_assignable<robin_hood::pair<Key, formType>>::value,
+                  MaxLoadFactor100, Key, formType, Hash, KeyEqual>;
 
 // set
 

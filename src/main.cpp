@@ -1,5 +1,8 @@
 #include "inputEventHandler.h"
-#include "movementInputTracer.h"
+#include "inputHandler/movementInputTracer.h"
+#include "inputHandler/inputTracer.h"
+#include "hooks.h"
+
 #include "settings.h"
 void MessageHandler(SKSE::MessagingInterface::Message* a_msg)
 {
@@ -11,6 +14,8 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_msg)
 		if (settings::bToggleMovementInputTrace) {
 			movementInputTracer::GetSingleton()->loadMovementTraceSpells();
 		}
+		inputTracer::GetSingleton()->loadInputTraceConfigs();
+		hooks::install();
 		break;
 	}
 }

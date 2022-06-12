@@ -17,7 +17,6 @@ public:
 
 
 	static inline robin_hood::unordered_map<userInputEvent, animationEvent> animEventMap_u;
-	static inline robin_hood::unordered_map<userInputEvent, std::vector<RE::SpellItem*>*> keyTraceMap_u;
 	static inline robin_hood::unordered_map<userInputEvent, std::vector<RE::SpellItem*>*> spellCastingMap_u;
 
 	using buttonEvent = std::string;

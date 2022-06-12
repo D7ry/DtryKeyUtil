@@ -67,17 +67,66 @@ namespace utils
 		value = ret;
 		return true;
 	}
-	namespace gameDataLoader
-	{
-		inline void loadSpellItem(RE::SpellItem*& a_spellItem, RE::TESDataHandler& a_TESDataHandler, std::string a_formID, std::string a_plugin) {
-			int raw_form = 0;
-			ToInt(a_formID, raw_form);
-			auto read = a_TESDataHandler.LookupForm<RE::SpellItem>(raw_form, a_plugin);
-			if (!read) {
-				ERROR("Error: invalid spell item. formID: {}, plugin: {}", a_formID, a_plugin);
-				return;
+
+
+}
+
+class simpleIniUtils
+{
+public:
+	/// <summary>
+	/// Run the function with every entry in the designated section as parameters.
+	/// </summary>
+	/// <param name="a_ini">ini to be loaded</param>
+	/// <param name="a_section">section to be loaded</param>
+	/// <param name="func">function that will take every entry in the section as a parameter</param>
+	static void apply(CSimpleIniA& a_ini, const char* a_section, void (*func) (std::string a_string)) {
+		std::list<CSimpleIniA::Entry> keys;
+		a_ini.GetAllKeys(a_section, keys);
+		for (auto one_key : keys) {
+			std::list<CSimpleIniA::Entry> values;
+			a_ini.GetAllValues(a_section, one_key.pItem, values);
+			for (auto one_value : values) {
+				func(one_value.pItem);
 			}
-			a_spellItem = read;
 		}
 	}
-}
+};
+
+class gameDataUilts
+{
+public:
+	template<class formType> 
+	static void loadForm(RE::TESDataHandler* a_TESDataHandler, formType*& a_form, std::string a_formID, std::string a_plugin) {
+		int raw_form = 0;
+		utils::ToInt(a_formID, raw_form);
+		auto read = a_TESDataHandler->LookupForm<formType>(raw_form, a_plugin);
+		if (!read) {
+			ERROR("Error: invalid form. formID: {}, plugin: {}", a_formID, a_plugin);
+			return;
+		}
+		a_form = read;
+	}
+	template<class formType>
+	static formType* getForm(RE::TESDataHandler* a_TESDataHandler, std::string a_formID, std::string a_plugin) {
+		int raw_form = 0;
+		utils::ToInt(a_formID, raw_form);
+		formType* form = a_TESDataHandler->LookupForm<formType>(raw_form, a_plugin);
+		if (!form) {
+			ERROR("Error: invalid form. formID: {}, plugin: {}", a_formID, a_plugin);
+			return nullptr;
+		}
+		return form;
+	}
+
+	/*Load a tesForm object to a_form.
+	@param a_TESDataHandler: reference to dataHandler singleton.
+	@param a_form: reference to the pointer to the form.
+	@param a_iniLine: an ini line in the format of "0x0123|PluginName.esp"*/
+	template<class formType> static void loadForm(RE::TESDataHandler* a_TESDataHandler, formType*& a_form, std::string a_iniLine) {
+		auto configV = utils::tokenize(a_iniLine);
+		auto formID = configV[0];
+		auto plugin = configV[1];
+		loadForm(a_TESDataHandler, a_form, formID, plugin);
+	}
+};
