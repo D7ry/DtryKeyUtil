@@ -13,9 +13,9 @@ public:
 
 private:
     inline void offsetInputKeyIndex(uint32_t& a_key, RE::INPUT_DEVICES::INPUT_DEVICE a_inputDevice);
-    inline void onButtonEvent(RE::ButtonEvent* a_buttonEvent);
+    inline void processEventIDTrace(RE::ButtonEvent* a_buttonEvent, bool isDown);
 
-    inline void onUserEvent(RE::BSFixedString a_userEvent, bool isDown);
+    inline void processUserEventTrace(RE::BSFixedString a_userEvent, bool isDown);
 
     enum : std::uint32_t
     {

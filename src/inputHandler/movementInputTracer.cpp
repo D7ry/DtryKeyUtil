@@ -10,24 +10,34 @@ const char* movementInputTraceSettingsDir = "Data\\SKSE\\Plugins\\dtryKeyUtil\\c
 void movementInputTracer::loadMovementTraceSpells() {
 	INFO("loading movement trace spells...");
 	CSimpleIniA pluginSettings;
-	if (!utils::readSimpleIni(pluginSettings, movementInputTraceSettingsDir)) {
+	if (!simpleIniUtils::readSimpleIni(pluginSettings, movementInputTraceSettingsDir)) {
 		return;
 	}
 
 	auto data = RE::TESDataHandler::GetSingleton();
-	auto fwd = pluginSettings.GetValue("MovementInputTrace", "forwardMovementSpell");
-	auto bwd = pluginSettings.GetValue("MovementInputTrace", "backwardMovementSpell");
-	auto left = pluginSettings.GetValue("MovementInputTrace", "leftMovementSpell");
-	auto right = pluginSettings.GetValue("MovementInputTrace", "rightMovementSpell");
+	auto fwd = pluginSettings.GetValue("MovementInputTrace", "spell_forward");
+	auto bwd = pluginSettings.GetValue("MovementInputTrace", "spell_backward");
+	auto left = pluginSettings.GetValue("MovementInputTrace", "spell_left");
+	auto right = pluginSettings.GetValue("MovementInputTrace", "spell_right");
+	auto TDM_Mgef = pluginSettings.GetValue("MovementInputTrace", "TDM_TargetLockMGEF");
 	gameDataUilts::loadForm(data, movementSpell_forward, fwd);
 	gameDataUilts::loadForm(data, movementSpell_back, bwd);
 	gameDataUilts::loadForm(data, movementSpell_left, left);
 	gameDataUilts::loadForm(data, movementSpell_right, right);
+	if (settings::bTraceOnlyWhenTargetLock) {
+		gameDataUilts::loadForm(data, TDM_TargetLockMGEF, TDM_Mgef);
+	}
 	INFO("...done");
 }
 
 void movementInputTracer::onForward(bool activate) {
 	if (activate) {
+		if (settings::bTraceOnlyWhenTargetLock) {//check TDM's target lock
+			auto pc = RE::PlayerCharacter::GetSingleton();
+			if (!pc || !pc->HasMagicEffect(TDM_TargetLockMGEF)) {
+				return;
+			}
+		}
 		utils::addSpellToPlayer(movementSpell_forward);
 		DEBUG("forward down");
 	}
@@ -39,6 +49,12 @@ void movementInputTracer::onForward(bool activate) {
 
 void movementInputTracer::onBack(bool activate) {
 	if (activate) {
+		if (settings::bTraceOnlyWhenTargetLock) {//check TDM's target lock
+			auto pc = RE::PlayerCharacter::GetSingleton();
+			if (!pc || !pc->HasMagicEffect(TDM_TargetLockMGEF)) {
+				return;
+			}
+		}
 		utils::addSpellToPlayer(movementSpell_back);
 		DEBUG("back down");
 	}
@@ -50,6 +66,12 @@ void movementInputTracer::onBack(bool activate) {
 
 void movementInputTracer::onLeft(bool activate) {
 	if (activate) {
+		if (settings::bTraceOnlyWhenTargetLock) {//check TDM's target lock
+			auto pc = RE::PlayerCharacter::GetSingleton();
+			if (!pc || !pc->HasMagicEffect(TDM_TargetLockMGEF)) {
+				return;
+			}
+		}
 		utils::addSpellToPlayer(movementSpell_left);
 		DEBUG("left down");
 	}
@@ -61,6 +83,12 @@ void movementInputTracer::onLeft(bool activate) {
 
 void movementInputTracer::onRight(bool activate) {
 	if (activate) {
+		if (settings::bTraceOnlyWhenTargetLock) {//check TDM's target lock
+			auto pc = RE::PlayerCharacter::GetSingleton();
+			if (!pc || !pc->HasMagicEffect(TDM_TargetLockMGEF)) {
+				return;
+			}
+		}
 		DEBUG("right down");
 		utils::addSpellToPlayer(movementSpell_right);
 	}
@@ -70,55 +98,70 @@ void movementInputTracer::onRight(bool activate) {
 	}
 }
 inline bool inRange(float num, double low, double high) {
-	DEBUG("{}, {}, {}", num, low, high);
+	//DEBUG("{}, {}, {}", num, low, high);
 	return low < num && num <= high;
 }
 
+inline bool InPIRange(float rad, double low, double high) {
+	return (low * PI) < rad 
+		&& rad <= (high * PI);
+}
 movementInputTracer::thumbStickZone movementInputTracer::getThumbStickZone(float x, float y) {
-	
+	if (x == 0 && y == 0) {
+		return thumbStickZone::neutral;
+	}
 	float rad = atan2(y, x);
 	if (rad < 0) {
 		rad += 2 * PI;
 	}
-	DEBUG("getting thumstick zone for radian {}", rad);
-	if (inRange(rad, 0, 1.0 / 8 * PI) || inRange(rad, 15.0 / 8 * PI, 0)) {
-		DEBUG("R");
-		return thumbStickZone::right;
+	DEBUG(rad);
+	if (settings::bThumbStickOctodirecitonalTrace) {
+		if (InPIRange(rad, 0, 1.0 / 8) || InPIRange(rad, 15.0 / 8, 2) || rad == 0) {
+			return thumbStickZone::right;
+		}
+		else if (InPIRange(rad, 1.0 / 8, 3.0 / 8)) {
+			return thumbStickZone::upRight;
+		}
+		else if (InPIRange(rad, 3.0 / 8, 5.0 / 8)) {
+			return thumbStickZone::up;
+		}
+		else if (InPIRange(rad, 5.0 / 8, 7.0 / 8)) {
+			return thumbStickZone::upLeft;
+		}
+		else if (InPIRange(rad, 7.0 / 8, 9.0 / 8)) {
+			return thumbStickZone::left;
+		}
+		else if (InPIRange(rad, 9.0 / 8, 11.0 / 8)) {
+			return thumbStickZone::downLeft;
+		}
+		else if (InPIRange(rad, 11.0 / 8, 13.0 / 8)) {
+			return thumbStickZone::down;
+		}
+		else if (InPIRange(rad, 13.0 / 8, 15.0 / 8)) {
+			return thumbStickZone::downRight;
+		}
 	}
-	else if (inRange(rad, 1.0 / 8 * PI, 3.0 / 8 * PI)) {
-		DEBUG("UR");
-		return thumbStickZone::upRight;
+	else {
+		if (InPIRange(rad, 0, 1.0 / 4) || InPIRange(rad, 7.0 / 4, 2) || rad == 0) {
+			return thumbStickZone::right;
+		}
+		else if (InPIRange(rad, 1.0 / 4, 3.0 / 4)) {
+			return thumbStickZone::up;
+		}
+		else if (InPIRange(rad, 3.0 / 4, 5.0 / 4)) {
+			return thumbStickZone::left;
+		}
+		else if (InPIRange(rad, 5.0 / 4, 7.0 / 4)) {
+			return thumbStickZone::down;
+		}
+
 	}
-	else if (inRange(rad, 3.0 / 8 * PI, 5.0 / 8 * PI)) {
-		DEBUG("U");
-		return thumbStickZone::up;
-	}
-	else if (inRange(rad, 5.0 / 8 * PI, 7.0 / 8 * PI)) {
-		DEBUG("UL");
-		return thumbStickZone::upLeft;
-	}
-	else if (inRange(rad, 7.0 / 8 * PI, 9.0 / 8 * PI)) {
-		DEBUG("L");
-		return thumbStickZone::left;
-	}
-	else if (inRange(rad, 9.0 / 8 * PI, 11.0 / 8 * PI)) {
-		DEBUG("DL");
-		return thumbStickZone::downLeft;
-	}
-	else if (inRange(rad, 11.0 / 8 * PI, 13.0 / 8 * PI)) {
-		DEBUG("D");
-		return thumbStickZone::down;
-	}
-	else if (inRange(rad, 13.0 / 8 * PI, 15.0 / 8 * PI)) {
-		DEBUG("DR");
-		return thumbStickZone::downRight;
-	}
+	
 	
 }
 
-/*Process perfectly horizontal or vertical thumbstick movement.*/
+/*Process perfectly horizontal or vertical thumbstick movement.
 void movementInputTracer::onPerfectThumbStickMovementInput(float x, float y) {
-	DEBUG("perfect movement");
 	if (x == 0) {
 		if (prevThumbStickX > 0) {
 			onRight(false);
@@ -181,7 +224,7 @@ void movementInputTracer::onPerfectThumbStickMovementInput(float x, float y) {
 			prevThumbStickZone = thumbStickZone::none;
 		}
 	}
-}
+}*/
 bool movementInputTracer::updateProximityThumbstickZone(thumbStickZone newThumbStickZone) {
 	switch (newThumbStickZone) {
 	case thumbStickZone::down:
@@ -189,25 +232,29 @@ bool movementInputTracer::updateProximityThumbstickZone(thumbStickZone newThumbS
 		case thumbStickZone::down: return true;
 		case thumbStickZone::downLeft: onLeft(false); return true;
 		case thumbStickZone::downRight: onRight(false); return true;
-		} 
+		}
+		break;
 	case thumbStickZone::up:
 		switch (prevThumbStickZone) {
 		case thumbStickZone::up: return true;
 		case thumbStickZone::upLeft: onLeft(false); return true;
 		case thumbStickZone::upRight: onRight(false); return true;
 		}
+		break;
 	case thumbStickZone::left:
 		switch (prevThumbStickZone) {
 		case thumbStickZone::left: return true;
 		case thumbStickZone::upLeft: onForward(false); return true;
 		case thumbStickZone::downLeft: onBack(false); return true;
 		}
+		break;
 	case thumbStickZone::right:
 		switch (prevThumbStickZone) {
 		case thumbStickZone::right: return true;
 		case thumbStickZone::downRight: onBack(false); return true;
 		case thumbStickZone::upRight: onForward(false); return true;
 		}
+		break;
 	case thumbStickZone::upLeft:
 		switch (prevThumbStickZone) {
 		case thumbStickZone::upLeft: return true;
@@ -216,6 +263,7 @@ bool movementInputTracer::updateProximityThumbstickZone(thumbStickZone newThumbS
 		case thumbStickZone::upRight: onRight(false); onLeft(true); return true;
 		case thumbStickZone::downLeft: onBack(false); onForward(true); return true;
 		}
+		break;
 	case thumbStickZone::downLeft:
 		switch (prevThumbStickZone) {
 		case thumbStickZone::downLeft: return true;
@@ -224,6 +272,7 @@ bool movementInputTracer::updateProximityThumbstickZone(thumbStickZone newThumbS
 		case thumbStickZone::downRight: onRight(false); onLeft(true); return true;
 		case thumbStickZone::upLeft: onForward(false); onBack(true); return true;
 		}
+		break;
 	case thumbStickZone::upRight:
 		switch (prevThumbStickZone) {
 		case thumbStickZone::upRight: return true;
@@ -232,6 +281,7 @@ bool movementInputTracer::updateProximityThumbstickZone(thumbStickZone newThumbS
 		case thumbStickZone::upLeft: onLeft(false); onRight(true); return true;
 		case thumbStickZone::downRight: onBack(false); onForward(true); return true;
 		}
+		break;
 	case thumbStickZone::downRight:
 		switch (prevThumbStickZone) {
 		case thumbStickZone::downRight: return true;
@@ -240,13 +290,14 @@ bool movementInputTracer::updateProximityThumbstickZone(thumbStickZone newThumbS
 		case thumbStickZone::downLeft: onLeft(false); onRight(true); return true;
 		case thumbStickZone::upRight: onForward(false); onBack(true); return true;
 		}
+		break;
 	}
-
+	DEBUG("FAILED TO UPDATE");
 	return false;
 }
 
+
 void movementInputTracer::updateThumbstickInputTrace(thumbStickZone newThumbStickZone) {
-	//DEBUG("inperfect movement, start tracing...");
 	if (!updateProximityThumbstickZone(newThumbStickZone)) {
 		switch (prevThumbStickZone) {
 		case thumbStickZone::up: onForward(false); break;
@@ -274,12 +325,8 @@ void movementInputTracer::updateThumbstickInputTrace(thumbStickZone newThumbStic
 }
 
 void movementInputTracer::onThumbStickMovement(RE::ThumbstickEvent* a_thumbStickMovementInput) {
-	auto x = a_thumbStickMovementInput->xValue;
-	auto y = a_thumbStickMovementInput->yValue;
-	DEBUG("x: {}, y: {}", x, y);
-	updateThumbstickInputTrace(getThumbStickZone(x, y));
-	prevThumbStickX = x;
-	prevThumbStickY = y;
+	//DEBUG("x: {}, y: {}", x, y);
+	updateThumbstickInputTrace(getThumbStickZone(a_thumbStickMovementInput->xValue, a_thumbStickMovementInput->yValue));
 }
 
 void movementInputTracer::onKeyBoardMovement(RE::ButtonEvent* a_keyboardMovementInput) {

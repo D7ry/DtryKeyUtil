@@ -3,7 +3,7 @@ class movementInputTracer
 {
 public:
 	enum thumbStickZone {
-		none = 0,
+		neutral = 0,
 		up,
 		down,
 		left,
@@ -14,11 +14,14 @@ public:
 		downRight
 	};
 
-	movementInputTracer() {
-		prevThumbStickZone = thumbStickZone::none;
-		prevThumbStickX = 0;
-		prevThumbStickY = 0;
+	enum traceMode {
+		keyBoard,
+		gamePad
+	};
 
+	movementInputTracer() {
+		prevThumbStickZone = thumbStickZone::neutral;
+		currentTraceMode = traceMode::keyBoard;
 	}
 
 	static movementInputTracer* GetSingleton()
@@ -27,7 +30,7 @@ public:
 		return  std::addressof(singleton);
 	}
 	void loadMovementTraceSpells();
-	inline void onPerfectThumbStickMovementInput(float x, float y);
+	//inline void onPerfectThumbStickMovementInput(float x, float y);
 	inline bool updateProximityThumbstickZone(thumbStickZone new_thumbStickZone);
 	inline void updateThumbstickInputTrace(thumbStickZone new_thumbStickZone);
 	inline thumbStickZone getThumbStickZone(float x, float y);
@@ -39,10 +42,10 @@ private:
 	inline void onLeft(bool activate = true);
 	inline void onRight(bool activate = true);
 	thumbStickZone prevThumbStickZone;
-	float prevThumbStickX;
-	float prevThumbStickY;
 	RE::SpellItem* movementSpell_forward;
 	RE::SpellItem* movementSpell_back;
 	RE::SpellItem* movementSpell_left;
 	RE::SpellItem* movementSpell_right;
+	RE::EffectSetting* TDM_TargetLockMGEF;
+	traceMode currentTraceMode;
 };

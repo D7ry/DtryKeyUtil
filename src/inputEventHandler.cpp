@@ -34,14 +34,13 @@ void inputEventHandler::offsetInputKeyIndex(uint32_t& a_key, RE::INPUT_DEVICES::
 	}
 }
 
-void inputEventHandler::onButtonEvent(RE::ButtonEvent* a_buttonEvent) {
-	if (!a_buttonEvent) {
-		return;
-	}
-	auto key = a_buttonEvent->idCode;
-	offsetInputKeyIndex(key, a_buttonEvent->device.get());
+void inputEventHandler::processEventIDTrace(RE::ButtonEvent* a_buttonEvent, bool isDown) {
+	auto id = a_buttonEvent->idCode;
+	auto device = a_buttonEvent->device.get();
+	offsetInputKeyIndex(id, device);
+	inputTracer::GetSingleton()->processIDInputTrace(id, device, isDown);
 }
-void inputEventHandler::onUserEvent(RE::BSFixedString a_userEvent, bool isDown) {
+void inputEventHandler::processUserEventTrace(RE::BSFixedString a_userEvent, bool isDown) {
 	inputTracer::GetSingleton()->processUserInputTrace(static_cast<std::string>(a_userEvent), isDown);
 }
 
@@ -61,16 +60,20 @@ EventResult inputEventHandler::ProcessEvent(RE::InputEvent* const* a_event, RE::
 		auto buttonEvent = static_cast<RE::ButtonEvent*>(one_event);
 		bool isDown = buttonEvent->IsDown();
 		bool isUp = buttonEvent->IsUp();
-		if (!isDown && !isUp) {
+		if (!isDown && !isUp) {//only perform trace on downs/ups
 			return EventResult::kContinue;
 		}
 		auto userEvent = one_event->QUserEvent();
 
 		if (settings::bLogUserEvent) {
-			RE::ConsoleLog::GetSingleton()->Print("User event triggered: %f", userEvent.c_str());
+			RE::ConsoleLog::GetSingleton()->Print(userEvent.c_str());
 		}
-		onUserEvent(userEvent, isDown);
-		//onButtonEvent(buttonEvent);
+		if (settings::bToggleUserEventInputTrace) {
+			processUserEventTrace(userEvent, isDown);
+		}
+		if (settings::bToggleEventIDInputTrace) {
+			processEventIDTrace(buttonEvent, isDown);
+		}
 	}
 
 	return EventResult::kContinue;

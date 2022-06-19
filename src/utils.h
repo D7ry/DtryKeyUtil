@@ -16,16 +16,7 @@ namespace utils
 		}
 	}
 
-	inline bool readSimpleIni(CSimpleIniA& a_ini, const char* a_iniAddress) {
-		if (std::filesystem::exists(a_iniAddress)) {
-			a_ini.LoadFile(a_iniAddress);
-			return true;
-		}
-		else {
-			ERROR("Error: {} is not a valid .ini address.", a_iniAddress);
-			return false;
-		}
-	}
+
 
 	/*Tokenize a string into vectors, separated by a common delimiter.
    @param s: string to be tokenized.
@@ -74,6 +65,16 @@ namespace utils
 class simpleIniUtils
 {
 public:
+	static bool readSimpleIni(CSimpleIniA& a_ini, const char* a_iniAddress) {
+		if (std::filesystem::exists(a_iniAddress)) {
+			a_ini.LoadFile(a_iniAddress);
+			return true;
+		}
+		else {
+			ERROR("Error: {} is not a valid .ini address.", a_iniAddress);
+			return false;
+		}
+	}
 	/// <summary>
 	/// Run the function with every entry in the designated section as parameters.
 	/// </summary>
@@ -102,7 +103,7 @@ public:
 		utils::ToInt(a_formID, raw_form);
 		auto read = a_TESDataHandler->LookupForm<formType>(raw_form, a_plugin);
 		if (!read) {
-			ERROR("Error: invalid form. formID: {}, plugin: {}", a_formID, a_plugin);
+			INFO("Invalid form. formID: {}, plugin: {}", a_formID, a_plugin);
 			return;
 		}
 		a_form = read;
@@ -113,7 +114,7 @@ public:
 		utils::ToInt(a_formID, raw_form);
 		formType* form = a_TESDataHandler->LookupForm<formType>(raw_form, a_plugin);
 		if (!form) {
-			ERROR("Error: invalid form. formID: {}, plugin: {}", a_formID, a_plugin);
+			INFO("Error: invalid form. formID: {}, plugin: {}", a_formID, a_plugin);
 			return nullptr;
 		}
 		return form;

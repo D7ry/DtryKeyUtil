@@ -1,3 +1,4 @@
+#pragma once
 #include "lib/robin_hood.h"
 #include "lib/SimpleIni.h"
 
@@ -8,13 +9,13 @@ public:
 	static void readSettings();
 	static inline bool bLogUserEvent = false;
 	static inline bool bToggleMovementInputTrace = true;
-
+	static inline bool bToggleUserEventInputTrace = true;
+	static inline bool bToggleEventIDInputTrace = true;
+	static inline bool bTraceOnlyWhenTargetLock = true;
+	static inline bool bThumbStickOctodirecitonalTrace = true;
 	using userInputEvent = std::string;
 	using animationEvent = std::string;
 	static inline robin_hood::unordered_set<userInputEvent> registeredEvents;
-
-	static inline robin_hood::unordered_map<userInputEvent, RE::SpellItem*> movementDirectionTraceMap;
-
 
 	static inline robin_hood::unordered_map<userInputEvent, animationEvent> animEventMap_u;
 	static inline robin_hood::unordered_map<userInputEvent, std::vector<RE::SpellItem*>*> spellCastingMap_u;

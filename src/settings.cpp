@@ -42,12 +42,16 @@ void settings::readSettings() {
 void settings::readPluginSettings() {
 	INFO("Reading plugin settings...");
 	CSimpleIniA pluginSettings;
-	if (!utils::readSimpleIni(pluginSettings, settingsDir)) {
+	if (!simpleIniUtils::readSimpleIni(pluginSettings, settingsDir)) {
 		return;
 	}
 
 	ReadBoolSetting(pluginSettings, "General", "bLogUserEvent", bLogUserEvent);
-	ReadBoolSetting(pluginSettings, "MovementInputTrace", "bToggleMovementInputTrace", bToggleMovementInputTrace);
+	ReadBoolSetting(pluginSettings, "General", "bToggleMovementInputTrace", bToggleMovementInputTrace);
+	ReadBoolSetting(pluginSettings, "General", "bToggleUserEventInputTrace", bToggleUserEventInputTrace); 
+	ReadBoolSetting(pluginSettings, "General", "bToggleEventIDInputTrace", bToggleEventIDInputTrace);
+	ReadBoolSetting(pluginSettings, "MovementInputTrace", "bTraceOnlyWhenTargetLock", bTraceOnlyWhenTargetLock);
+	ReadBoolSetting(pluginSettings, "MovementInputTrace", "bThumbStickOctodirecitonalTrace", bThumbStickOctodirecitonalTrace);
 	INFO("...done");
 }
 
