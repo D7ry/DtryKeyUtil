@@ -23,8 +23,9 @@ private:
 	void loadIDInputTraceConfig_Mouse(CSimpleIniA& a_ini);
 	void loadIDInputTraceConfig_Keyboard(CSimpleIniA& a_ini);
 	void loadIDInputTraceConfig_GamePad(CSimpleIniA& a_ini);
-	static inline robin_hood::unordered_map<userInputEvent, std::vector<RE::SpellItem*>> keyTraceMap_userEvent;
-	static inline robin_hood::unordered_map<IDEvent, std::vector<RE::SpellItem*>> keyTraceMap_EventID_Keyboard;
-	static inline robin_hood::unordered_map<IDEvent, std::vector<RE::SpellItem*>> keyTraceMap_EventID_Mouse;
-	static inline robin_hood::unordered_map<IDEvent, std::vector<RE::SpellItem*>> keyTraceMap_EventID_GamePad;
+
+	static robin_hood::unordered_map<userInputEvent, std::vector<RE::SpellItem*>> keyTraceMap_userEvent;
+	static robin_hood::unordered_map<IDEvent, std::vector<RE::SpellItem*>> keyTraceMap_EventID_Keyboard;
+	static robin_hood::unordered_map<IDEvent, std::vector<RE::SpellItem*>> keyTraceMap_EventID_Mouse;
+	static robin_hood::unordered_map<IDEvent, std::vector<RE::SpellItem*>> keyTraceMap_EventID_GamePad;
 };

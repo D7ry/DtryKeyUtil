@@ -14,6 +14,7 @@ public:
 private:
     inline void offsetInputKeyIndex(uint32_t& a_key, RE::INPUT_DEVICES::INPUT_DEVICE a_inputDevice);
     inline void processEventIDTrace(RE::ButtonEvent* a_buttonEvent, bool isDown);
+	inline void processAnimEventTrigger(RE::ButtonEvent* a_buttonEvent);
 
     inline void processUserEventTrace(RE::BSFixedString a_userEvent, bool isDown);
 

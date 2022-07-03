@@ -15,6 +15,8 @@ public:
 	inputTrigger(int a_keyCode) {
 		_keyCode = a_keyCode;
 	}
+
+
 	inputTrigger(std::string a_userEvent) {
 		_userEvent = a_userEvent;
 	}

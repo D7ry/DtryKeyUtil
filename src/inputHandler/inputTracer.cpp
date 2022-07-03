@@ -69,17 +69,17 @@ void inputTracer::processIDInputTrace(IDEvent a_eventID, RE::INPUT_DEVICE a_devi
 }
 
 void inputTracer::loadInputTraceConfigs() {
-	INFO("Loading custom input trace configurations...");
+	logger::info("Loading custom input trace configurations...");
 	int i = 0;
 	if (std::filesystem::is_directory(InputTraceConfigDir)) {
 		for (const auto& entry : std::filesystem::directory_iterator(InputTraceConfigDir)) { //iterates through all .ini files
 			std::string pathStr = entry.path().string();
-			INFO("Loading from {}", pathStr);
+			logger::info("Loading from {}", pathStr);
 			const char* cstr = pathStr.c_str();
 			loadInputTraceConfig(cstr);
 			i++;
 		}
-		INFO("..done; loaded {} ini configs.", i);
+		logger::info("..done; loaded {} ini configs.", i);
 	}
 	else {
 		ERROR("Error: input trace config directory not found");
@@ -99,7 +99,7 @@ void inputTracer::loadInputTraceConfig(const char* a_iniPath) {
 void inputTracer::loadUserInputTraceConfig(CSimpleIniA& a_ini) {
 	auto readOneLine = [](std::string a_line)
 	{
-		INFO(a_line);
+		logger::info(a_line);
 		auto vec = utils::tokenize(a_line);
 		std::string userInput = vec[0];
 		std::string formID = vec[1];
@@ -126,7 +126,7 @@ void inputTracer::loadIDInputTraceConfig(CSimpleIniA& a_ini) {
 void inputTracer::loadIDInputTraceConfig_Mouse(CSimpleIniA& a_ini) {
 	auto readOneLine = [](std::string a_line)
 	{
-		INFO(a_line);
+		logger::info(a_line);
 		auto vec = utils::tokenize(a_line);
 		uint32_t EventID = static_cast<uint32_t>(std::stoul(vec[0]));
 		std::string formID = vec[1];
@@ -147,7 +147,7 @@ void inputTracer::loadIDInputTraceConfig_Mouse(CSimpleIniA& a_ini) {
 void inputTracer::loadIDInputTraceConfig_GamePad(CSimpleIniA& a_ini) {
 	auto readOneLine = [](std::string a_line)
 	{
-		INFO(a_line);
+		logger::info(a_line);
 		auto vec = utils::tokenize(a_line);
 		uint32_t EventID = static_cast<uint32_t>(std::stoul(vec[0]));
 		std::string formID = vec[1];
@@ -167,7 +167,7 @@ void inputTracer::loadIDInputTraceConfig_GamePad(CSimpleIniA& a_ini) {
 void inputTracer::loadIDInputTraceConfig_Keyboard(CSimpleIniA& a_ini) {
 	auto readOneLine = [](std::string a_line)
 	{
-		INFO(a_line);
+		logger::info(a_line);
 		auto vec = utils::tokenize(a_line);
 		uint32_t EventID = static_cast<uint32_t>(std::stoul(vec[0]));
 		std::string formID = vec[1];

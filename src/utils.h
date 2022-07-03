@@ -16,6 +16,23 @@ namespace utils
 		}
 	}
 
+	inline void saeToPlayer(RE::BSFixedString ae) {
+		auto pc = RE::PlayerCharacter::GetSingleton();
+		if (pc) {
+			pc->NotifyAnimationGraph(ae);
+		}
+	}
+
+	inline void flipGraphVariableBoolForPc(RE::BSFixedString& gvb) {
+		auto pc = RE::PlayerCharacter::GetSingleton();
+		if (pc) {
+			bool b;
+			if (pc->GetGraphVariableBool(gvb, b)) {
+				pc->SetGraphVariableBool(gvb, !b);
+			}
+		}
+	}
+
 
 
 	/*Tokenize a string into vectors, separated by a common delimiter.

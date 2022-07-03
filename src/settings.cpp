@@ -7,7 +7,7 @@ void settings::ReadIntSetting(CSimpleIniA& a_ini, const char* a_sectionName, con
 	const char* bFound = nullptr;
 	bFound = a_ini.GetValue(a_sectionName, a_settingName);
 	if (bFound) {
-		//INFO("found {} with value {}", a_settingName, bFound);
+		//logger::info("found {} with value {}", a_settingName, bFound);
 		a_setting = static_cast<int>(a_ini.GetDoubleValue(a_sectionName, a_settingName));
 	}
 }
@@ -16,7 +16,7 @@ void settings::ReadFloatSetting(CSimpleIniA& a_ini, const char* a_sectionName, c
 	const char* bFound = nullptr;
 	bFound = a_ini.GetValue(a_sectionName, a_settingName);
 	if (bFound) {
-		//INFO("found {} with value {}", a_settingName, bFound);
+		//logger::info("found {} with value {}", a_settingName, bFound);
 		a_setting = static_cast<float>(a_ini.GetDoubleValue(a_sectionName, a_settingName));
 	}
 }
@@ -27,7 +27,7 @@ void settings::ReadBoolSetting(CSimpleIniA& a_ini, const char* a_sectionName, co
 	bFound = a_ini.GetValue(a_sectionName, a_settingName);
 	if (bFound)
 	{
-		//INFO("found {} with value {}", a_settingName, bFound);
+		//logger::info("found {} with value {}", a_settingName, bFound);
 		a_setting = a_ini.GetBoolValue(a_sectionName, a_settingName);
 	}
 }
@@ -40,7 +40,7 @@ void settings::readSettings() {
 }
 
 void settings::readPluginSettings() {
-	INFO("Reading plugin settings...");
+	logger::info("Reading plugin settings...");
 	CSimpleIniA pluginSettings;
 	if (!simpleIniUtils::readSimpleIni(pluginSettings, settingsDir)) {
 		return;
@@ -52,7 +52,7 @@ void settings::readPluginSettings() {
 	ReadBoolSetting(pluginSettings, "General", "bToggleEventIDInputTrace", bToggleEventIDInputTrace);
 	ReadBoolSetting(pluginSettings, "MovementInputTrace", "bTraceOnlyWhenTargetLock", bTraceOnlyWhenTargetLock);
 	ReadBoolSetting(pluginSettings, "MovementInputTrace", "bThumbStickOctodirecitonalTrace", bThumbStickOctodirecitonalTrace);
-	INFO("...done");
+	logger::info("...done");
 }
 
 void settings::readCustomConfigs() {

@@ -8,6 +8,7 @@ public:
 	
 	static void readSettings();
 	static inline bool bLogUserEvent = false;
+	static inline bool bToggleAnimEventTrigger = true;
 	static inline bool bToggleMovementInputTrace = true;
 	static inline bool bToggleUserEventInputTrace = true;
 	static inline bool bToggleEventIDInputTrace = true;

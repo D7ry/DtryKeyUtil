@@ -1,6 +1,7 @@
 #include "inputEventHandler.h"
 #include "inputHandler/movementInputTracer.h"
 #include "inputHandler/inputTracer.h"
+#include "inputHandler/animEvent.h"
 #include "hasher.hpp"
 #include "settings.h"
 
@@ -43,6 +44,12 @@ void inputEventHandler::processEventIDTrace(RE::ButtonEvent* a_buttonEvent, bool
 void inputEventHandler::processUserEventTrace(RE::BSFixedString a_userEvent, bool isDown) {
 	inputTracer::GetSingleton()->processUserInputTrace(static_cast<std::string>(a_userEvent), isDown);
 }
+void inputEventHandler::processAnimEventTrigger(RE::ButtonEvent* a_event) {
+	auto id = a_event->idCode;
+	auto device = a_event->device.get();
+	offsetInputKeyIndex(id, device);
+	animEvent::GetSingleton()->processInput(id, device);
+}
 
 EventResult inputEventHandler::ProcessEvent(RE::InputEvent* const* a_event, RE::BSTEventSource<RE::InputEvent*>*) {
 	if (!a_event || RE::UI::GetSingleton()->GameIsPaused()) {
@@ -55,8 +62,6 @@ EventResult inputEventHandler::ProcessEvent(RE::InputEvent* const* a_event, RE::
 		if (one_event->GetEventType() != RE::INPUT_EVENT_TYPE::kButton) {//get rid of all none-button events.
 			return EventResult::kContinue;
 		}
-
-
 		auto buttonEvent = static_cast<RE::ButtonEvent*>(one_event);
 		bool isDown = buttonEvent->IsDown();
 		bool isUp = buttonEvent->IsUp();
@@ -74,6 +79,10 @@ EventResult inputEventHandler::ProcessEvent(RE::InputEvent* const* a_event, RE::
 		if (settings::bToggleEventIDInputTrace) {
 			processEventIDTrace(buttonEvent, isDown);
 		}
+		if (settings::bToggleAnimEventTrigger && isDown) {
+			processAnimEventTrigger(buttonEvent);
+		}
+		
 	}
 
 	return EventResult::kContinue;

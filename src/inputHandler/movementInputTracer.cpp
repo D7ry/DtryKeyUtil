@@ -6,14 +6,12 @@
 #define PI 3.1415926535
 const char* movementInputTraceSettingsDir = "Data\\SKSE\\Plugins\\dtryKeyUtil\\config\\settings.ini";
 
-
 void movementInputTracer::loadMovementTraceSpells() {
-	INFO("loading movement trace spells...");
+	logger::info("loading movement trace spells...");
 	CSimpleIniA pluginSettings;
 	if (!simpleIniUtils::readSimpleIni(pluginSettings, movementInputTraceSettingsDir)) {
 		return;
 	}
-
 	auto data = RE::TESDataHandler::GetSingleton();
 	auto fwd = pluginSettings.GetValue("MovementInputTrace", "spell_forward");
 	auto bwd = pluginSettings.GetValue("MovementInputTrace", "spell_backward");
@@ -27,7 +25,7 @@ void movementInputTracer::loadMovementTraceSpells() {
 	if (settings::bTraceOnlyWhenTargetLock) {
 		gameDataUilts::loadForm(data, TDM_TargetLockMGEF, TDM_Mgef);
 	}
-	INFO("...done");
+	logger::info("...done");
 }
 
 void movementInputTracer::onForward(bool activate) {
@@ -39,11 +37,9 @@ void movementInputTracer::onForward(bool activate) {
 			}
 		}
 		utils::addSpellToPlayer(movementSpell_forward);
-		DEBUG("forward down");
 	}
 	else {
 		utils::removeSpellFromPlayer(movementSpell_forward);
-		DEBUG("forward up");
 	}
 }
 
@@ -56,11 +52,9 @@ void movementInputTracer::onBack(bool activate) {
 			}
 		}
 		utils::addSpellToPlayer(movementSpell_back);
-		DEBUG("back down");
 	}
 	else {
 		utils::removeSpellFromPlayer(movementSpell_back);
-		DEBUG("back up");
 	}
 }
 
@@ -73,11 +67,9 @@ void movementInputTracer::onLeft(bool activate) {
 			}
 		}
 		utils::addSpellToPlayer(movementSpell_left);
-		DEBUG("left down");
 	}
 	else {
 		utils::removeSpellFromPlayer(movementSpell_left);
-		DEBUG("left up");
 	}
 }
 
@@ -89,11 +81,9 @@ void movementInputTracer::onRight(bool activate) {
 				return;
 			}
 		}
-		DEBUG("right down");
 		utils::addSpellToPlayer(movementSpell_right);
 	}
 	else {
-		DEBUG("right up");
 		utils::removeSpellFromPlayer(movementSpell_right);
 	}
 }
@@ -114,7 +104,6 @@ movementInputTracer::thumbStickZone movementInputTracer::getThumbStickZone(float
 	if (rad < 0) {
 		rad += 2 * PI;
 	}
-	DEBUG(rad);
 	if (settings::bThumbStickOctodirecitonalTrace) {
 		if (InPIRange(rad, 0, 1.0 / 8) || InPIRange(rad, 15.0 / 8, 2) || rad == 0) {
 			return thumbStickZone::right;
@@ -160,71 +149,6 @@ movementInputTracer::thumbStickZone movementInputTracer::getThumbStickZone(float
 	
 }
 
-/*Process perfectly horizontal or vertical thumbstick movement.
-void movementInputTracer::onPerfectThumbStickMovementInput(float x, float y) {
-	if (x == 0) {
-		if (prevThumbStickX > 0) {
-			onRight(false);
-		}
-		else if (prevThumbStickX < 0) {
-			onLeft(false);
-		}
-		if (y > 0) {
-			if (prevThumbStickY < 0) {
-				onForward(true);
-				onBack(false);
-			}
-			else if (prevThumbStickY == 0) {
-				onForward(true);
-			}
-			prevThumbStickZone = thumbStickZone::up;
-		}
-		else if (y < 0) {
-			if (prevThumbStickY > 0) {
-				onBack(true);
-				onForward(false);
-			}
-			else if (prevThumbStickY == 0) {
-				onBack(true);
-			}
-			prevThumbStickZone = thumbStickZone::down;
-		}
-		else {
-			prevThumbStickZone = thumbStickZone::none;
-		}
-	}
-	if (y == 0) {
-		if (prevThumbStickY > 0) {
-			onForward(false);
-		}
-		else if (prevThumbStickY < 0) {
-			onBack(false);
-		}
-		if (x > 0) {
-			if (prevThumbStickX < 0) {
-				onRight(true);
-				onLeft(false);
-			}
-			else if (prevThumbStickX == 0) {
-				onRight(true);
-			}
-			prevThumbStickZone = thumbStickZone::right;
-		}
-		else if (x < 0) {
-			if (prevThumbStickX > 0) {
-				onLeft(true);
-				onRight(false);
-			}
-			else if (prevThumbStickX == 0) {
-				onLeft(true);
-			}
-			prevThumbStickZone = thumbStickZone::left;
-		}
-		else {
-			prevThumbStickZone = thumbStickZone::none;
-		}
-	}
-}*/
 bool movementInputTracer::updateProximityThumbstickZone(thumbStickZone newThumbStickZone) {
 	switch (newThumbStickZone) {
 	case thumbStickZone::down:
@@ -292,7 +216,6 @@ bool movementInputTracer::updateProximityThumbstickZone(thumbStickZone newThumbS
 		}
 		break;
 	}
-	DEBUG("FAILED TO UPDATE");
 	return false;
 }
 
