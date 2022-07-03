@@ -1,7 +1,5 @@
 #pragma once
 #include "settings.h"
-#include "PCH.h"
-#include "lib/robin_hood.h"
 class animEvent
 {
 public:
@@ -16,16 +14,26 @@ public:
 
 	void processInput(IDEvent a_eventID, RE::INPUT_DEVICE a_device);
 
+	
+	void loadIDAnimEventConfig_Mouse(CSimpleIniA& a_ini);
+	void loadIDAnimEventConfig_Keyboard(CSimpleIniA& a_ini);
+	void loadIDAnimEventConfig_GamePad(CSimpleIniA& a_ini);
+	
+	void loadIDAnimBoolConfig_Mouse(CSimpleIniA& a_ini);
+	void loadIDAnimBoolConfig_Keyboard(CSimpleIniA& a_ini);
+	void loadIDAnimBoolConfig_GamePad(CSimpleIniA& a_ini);
+
+
 private:
-	using animEventMap = std::unordered_map<IDEvent, std::vector<RE::BSFixedString>*>;
+	using animEventMap = std::unordered_map<IDEvent, std::shared_ptr<std::vector<RE::BSFixedString>>>;
 	inline void processAnimEventKey(animEventMap a_animEventMap, IDEvent a_event);
-	static animEventMap animEventMap_EventID_Keyboard;
-	static animEventMap animEventMap_EventID_Mouse;
-	static animEventMap animEventMap_EventID_GamePad;
+	animEventMap animEventMap_EventID_Keyboard;
+	animEventMap animEventMap_EventID_Mouse;
+	animEventMap animEventMap_EventID_GamePad;
 
 	inline void processAnimBoolFlipKey(animEventMap a_animEventMap, IDEvent a_event);
-	static animEventMap animBoolMap_EventID_Keyboard;
-	static animEventMap animBoolMap_EventID_Mouse;
-	static animEventMap animBoolMap_EventID_GamePad;
+	animEventMap animBoolMap_EventID_Keyboard;
+	animEventMap animBoolMap_EventID_Mouse;
+	animEventMap animBoolMap_EventID_GamePad;
 
 };

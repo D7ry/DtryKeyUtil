@@ -3,67 +3,47 @@
 #include "utils.h"
 const char* InputTraceConfigDir = "Data\\SKSE\\Plugins\\dtryKeyUtil\\config\\custom";
 void inputTracer::processUserInputTrace(userInputEvent a_userInput, bool isButtonDown) {
-	if (!keyTraceMap_userEvent.contains(a_userInput)) {
-		return;
-	}
-	if (isButtonDown) {
-		//DEBUG("button down on event {}, adding spells", a_userInput);
-		int i = 0;
-		for (auto one_spell : keyTraceMap_userEvent[a_userInput]) {
-			i++;
-			utils::addSpellToPlayer(one_spell);
+	auto it = keyTraceMap_userEvent.find(a_userInput);
+	if (it != keyTraceMap_userEvent.end()) {
+		if (isButtonDown) {
+			for (auto& one_spell : *it->second) {
+				utils::addSpellToPlayer(one_spell);
+			}
+		} else {
+			for (auto& one_spell : *it->second) {
+				utils::removeSpellFromPlayer(one_spell);
+			}
 		}
-		//DEBUG("added {} spells", i);
 	}
-	else {
-		//DEBUG("button up on event {}, removing spells", a_userInput);
-		int i = 0;
-		for (auto one_spell : keyTraceMap_userEvent[a_userInput]) {
-			i++;
-			utils::removeSpellFromPlayer(one_spell);
+	
+}
+
+void inputTracer::processInputTrace(std::unordered_map<IDEvent, std::shared_ptr<std::vector<RE::SpellItem*>>> a_keyTraceMap, IDEvent a_eventID, bool isButtonDown)
+{
+	auto it = a_keyTraceMap.find(a_eventID);
+	if (it != a_keyTraceMap.end()) {
+		if (isButtonDown) {
+			for (auto& spell : *it->second) {
+				utils::addSpellToPlayer(spell);
+			}
+		} else {
+			for (auto& spell : *it->second) {
+				utils::removeSpellFromPlayer(spell);
+			}
 		}
-		//DEBUG("removed {} spells", i);
 	}
 }
 
 void inputTracer::processIDInputTrace(IDEvent a_eventID, RE::INPUT_DEVICE a_device, bool isButtonDown) {
 	switch (a_device) {
 	case RE::INPUT_DEVICE::kGamepad:
-		if (keyTraceMap_EventID_GamePad.contains(a_eventID)) {
-			for (auto one_spell : keyTraceMap_EventID_GamePad[a_eventID]) {
-				if (isButtonDown) {
-					utils::addSpellToPlayer(one_spell);
-				}
-				else {
-					utils::removeSpellFromPlayer(one_spell);
-				}
-				
-			}
-		}
+		processInputTrace(keyTraceMap_EventID_GamePad, a_eventID, isButtonDown);
 		break;
 	case RE::INPUT_DEVICE::kMouse:
-		if (keyTraceMap_EventID_Mouse.contains(a_eventID)) {
-			for (auto one_spell : keyTraceMap_EventID_Mouse[a_eventID]) {
-				if (isButtonDown) {
-					utils::addSpellToPlayer(one_spell);
-				}
-				else {
-					utils::removeSpellFromPlayer(one_spell);
-				}
-			}
-		}
+		processInputTrace(keyTraceMap_EventID_Mouse, a_eventID, isButtonDown);
 		break;
 	case RE::INPUT_DEVICE::kKeyboard:
-		if (keyTraceMap_EventID_Keyboard.contains(a_eventID)) {
-			for (auto one_spell : keyTraceMap_EventID_Keyboard[a_eventID]) {
-				if (isButtonDown) {
-					utils::addSpellToPlayer(one_spell);
-				}
-				else {
-					utils::removeSpellFromPlayer(one_spell);
-				}
-			}
-		}
+		processInputTrace(keyTraceMap_EventID_Keyboard, a_eventID, isButtonDown);
 		break;
 	}
 }
@@ -99,18 +79,21 @@ void inputTracer::loadInputTraceConfig(const char* a_iniPath) {
 void inputTracer::loadUserInputTraceConfig(CSimpleIniA& a_ini) {
 	auto readOneLine = [](std::string a_line)
 	{
-		logger::info(a_line);
+		//logger::info(a_line);
 		auto vec = utils::tokenize(a_line);
 		std::string userInput = vec[0];
 		std::string formID = vec[1];
 		std::string plugin = vec[2];
 		RE::SpellItem* spell = gameDataUilts::getForm<RE::SpellItem>(RE::TESDataHandler::GetSingleton(), formID, plugin);
-		auto it = keyTraceMap_userEvent.find(userInput);
-		if (it != keyTraceMap_userEvent.end()) {
-			it->second.push_back(spell);
+		auto ptr = inputTracer::GetSingleton();
+		auto it = ptr->keyTraceMap_userEvent.find(userInput);
+		if (it != ptr->keyTraceMap_userEvent.end()) {
+			it->second->push_back(spell);
 		}
 		else {
-			keyTraceMap_userEvent.emplace(userInput, std::vector({ spell }));
+			auto spellVec = std::make_shared<std::vector<RE::SpellItem*>>();
+			spellVec->push_back(spell);
+			ptr->keyTraceMap_userEvent.insert({ userInput, spellVec });
 		}
 	};
 	simpleIniUtils::apply(a_ini, "KeyTrace_userEvent", readOneLine);
@@ -126,18 +109,20 @@ void inputTracer::loadIDInputTraceConfig(CSimpleIniA& a_ini) {
 void inputTracer::loadIDInputTraceConfig_Mouse(CSimpleIniA& a_ini) {
 	auto readOneLine = [](std::string a_line)
 	{
-		logger::info(a_line);
 		auto vec = utils::tokenize(a_line);
 		uint32_t EventID = static_cast<uint32_t>(std::stoul(vec[0]));
 		std::string formID = vec[1];
 		std::string plugin = vec[2];
 		RE::SpellItem* spell = gameDataUilts::getForm<RE::SpellItem>(RE::TESDataHandler::GetSingleton(), formID, plugin);
-		auto it = keyTraceMap_EventID_Mouse.find(EventID);
-		if (it != keyTraceMap_EventID_Mouse.end()) {
-			it->second.push_back(spell);
+		auto ptr = inputTracer::GetSingleton();
+		auto it = ptr->keyTraceMap_EventID_Mouse.find(EventID);
+		if (it != ptr->keyTraceMap_EventID_Mouse.end()) {
+			it->second->push_back(spell);
 		}
 		else {
-			keyTraceMap_EventID_Mouse.emplace(EventID, std::vector({ spell }));
+			auto spellVec = std::make_shared<std::vector<RE::SpellItem*>>();
+			spellVec->push_back(spell);
+			ptr->keyTraceMap_EventID_Mouse.insert({ EventID, spellVec });
 		}
 	};
 	simpleIniUtils::apply(a_ini, "KeyTrace_EventID_Mouse", readOneLine);
@@ -147,18 +132,22 @@ void inputTracer::loadIDInputTraceConfig_Mouse(CSimpleIniA& a_ini) {
 void inputTracer::loadIDInputTraceConfig_GamePad(CSimpleIniA& a_ini) {
 	auto readOneLine = [](std::string a_line)
 	{
-		logger::info(a_line);
+		//logger::info(a_line);
 		auto vec = utils::tokenize(a_line);
 		uint32_t EventID = static_cast<uint32_t>(std::stoul(vec[0]));
 		std::string formID = vec[1];
 		std::string plugin = vec[2];
 		RE::SpellItem* spell = gameDataUilts::getForm<RE::SpellItem>(RE::TESDataHandler::GetSingleton(), formID, plugin);
-		auto it = keyTraceMap_EventID_GamePad.find(EventID);
-		if (it != keyTraceMap_EventID_GamePad.end()) {
-			it->second.push_back(spell);
+
+		auto ptr = inputTracer::GetSingleton();
+		auto it = ptr->keyTraceMap_EventID_GamePad.find(EventID);
+		if (it != ptr->keyTraceMap_EventID_GamePad.end()) {
+			it->second->push_back(spell);
 		}
 		else {
-			keyTraceMap_EventID_GamePad.emplace(EventID, std::vector({ spell }));
+			auto spellVec = std::make_shared<std::vector<RE::SpellItem*>>();
+			spellVec->push_back(spell);
+			ptr->keyTraceMap_EventID_GamePad.insert({ EventID, spellVec });
 		}
 	};
 	simpleIniUtils::apply(a_ini, "KeyTrace_EventID_GamePad", readOneLine);
@@ -167,18 +156,21 @@ void inputTracer::loadIDInputTraceConfig_GamePad(CSimpleIniA& a_ini) {
 void inputTracer::loadIDInputTraceConfig_Keyboard(CSimpleIniA& a_ini) {
 	auto readOneLine = [](std::string a_line)
 	{
-		logger::info(a_line);
+		//logger::info(a_line);
 		auto vec = utils::tokenize(a_line);
 		uint32_t EventID = static_cast<uint32_t>(std::stoul(vec[0]));
 		std::string formID = vec[1];
 		std::string plugin = vec[2];
 		RE::SpellItem* spell = gameDataUilts::getForm<RE::SpellItem>(RE::TESDataHandler::GetSingleton(), formID, plugin);
-		auto it = keyTraceMap_EventID_Keyboard.find(EventID);
-		if (it != keyTraceMap_EventID_Keyboard.end()) {
-			it->second.push_back(spell);
+		auto ptr = inputTracer::GetSingleton();
+		auto it = ptr->keyTraceMap_EventID_Keyboard.find(EventID);
+		if (it != ptr->keyTraceMap_EventID_Keyboard.end()) {
+			it->second->push_back(spell);
 		}
 		else {
-			keyTraceMap_EventID_Keyboard.emplace(EventID, std::vector({ spell }));
+			auto spellVec = std::make_shared<std::vector<RE::SpellItem*>>();
+			spellVec->push_back(spell);
+			ptr->keyTraceMap_EventID_Keyboard.insert({ EventID, spellVec });
 		}
 	};
 	simpleIniUtils::apply(a_ini, "KeyTrace_EventID_Keyboard", readOneLine);

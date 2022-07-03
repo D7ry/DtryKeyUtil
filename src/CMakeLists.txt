@@ -12,7 +12,6 @@ set(SOURCE_FILES
 	"${SOURCE_DIR}/settings.cpp"
 	"${SOURCE_DIR}/settings.h"
 	"${SOURCE_DIR}/utils.h"
-	"${SOURCE_DIR}/lib/robin_hood.h"
 	"${SOURCE_DIR}/lib/SimpleIni.h"
 	"${SOURCE_DIR}/inputHandler/inputTracer.h"
 	"${SOURCE_DIR}/inputHandler/inputTracer.cpp"

@@ -23,7 +23,7 @@ namespace utils
 		}
 	}
 
-	inline void flipGraphVariableBoolForPc(RE::BSFixedString& gvb) {
+	inline void flipGraphVariableBoolForPlayer(RE::BSFixedString& gvb) {
 		auto pc = RE::PlayerCharacter::GetSingleton();
 		if (pc) {
 			bool b;
@@ -101,10 +101,11 @@ public:
 	static void apply(CSimpleIniA& a_ini, const char* a_section, void (*func) (std::string a_string)) {
 		std::list<CSimpleIniA::Entry> keys;
 		a_ini.GetAllKeys(a_section, keys);
-		for (auto one_key : keys) {
+		for (auto& one_key : keys) {
 			std::list<CSimpleIniA::Entry> values;
 			a_ini.GetAllValues(a_section, one_key.pItem, values);
-			for (auto one_value : values) {
+			for (auto& one_value : values) {
+				logger::info(one_value.pItem);
 				func(one_value.pItem);
 			}
 		}
@@ -120,7 +121,7 @@ public:
 		utils::ToInt(a_formID, raw_form);
 		auto read = a_TESDataHandler->LookupForm<formType>(raw_form, a_plugin);
 		if (!read) {
-			INFO("Invalid form. formID: {}, plugin: {}", a_formID, a_plugin);
+			logger::info("Invalid form. formID: {}, plugin: {}", a_formID, a_plugin);
 			return;
 		}
 		a_form = read;
@@ -131,7 +132,7 @@ public:
 		utils::ToInt(a_formID, raw_form);
 		formType* form = a_TESDataHandler->LookupForm<formType>(raw_form, a_plugin);
 		if (!form) {
-			INFO("Error: invalid form. formID: {}, plugin: {}", a_formID, a_plugin);
+			logger::info("Error: invalid form. formID: {}, plugin: {}", a_formID, a_plugin);
 			return nullptr;
 		}
 		return form;

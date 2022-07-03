@@ -1,5 +1,4 @@
 #pragma once
-#include "lib/robin_hood.h"
 #include "lib/SimpleIni.h"
 
 class settings
@@ -16,15 +15,10 @@ public:
 	static inline bool bThumbStickOctodirecitonalTrace = true;
 	using userInputEvent = std::string;
 	using animationEvent = std::string;
-	static inline robin_hood::unordered_set<userInputEvent> registeredEvents;
 
-	static inline robin_hood::unordered_map<userInputEvent, animationEvent> animEventMap_u;
-	static inline robin_hood::unordered_map<userInputEvent, std::vector<RE::SpellItem*>*> spellCastingMap_u;
 
 	using buttonEvent = std::string;
-	static inline robin_hood::unordered_map<buttonEvent, animationEvent> animEventMap_b;
-	static inline robin_hood::unordered_map<buttonEvent, std::vector<RE::SpellItem*>*> keyTraceMap_b;
-	static inline robin_hood::unordered_map<buttonEvent, std::vector<RE::SpellItem*>*> spellCastingMap_b;
+
 private:
 	static void readPluginSettings();
 	static void readCustomConfigs();

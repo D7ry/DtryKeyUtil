@@ -1,6 +1,5 @@
 #pragma once
 #pragma once
-#include "lib/robin_hood.h"
 #include "lib/SimpleIni.h"
 class inputTracer
 {
@@ -12,10 +11,15 @@ public:
 		return  std::addressof(singleton);
 	}
 
+	void loadInputTraceConfigs();
+
 	void processUserInputTrace(userInputEvent a_userInput, bool isButtonDown);
 	void processIDInputTrace(IDEvent a_eventID, RE::INPUT_DEVICE a_device, bool isButtonDown);
-	void loadInputTraceConfigs();
+
 private:
+	inline void processInputTrace(std::unordered_map<IDEvent, std::shared_ptr<std::vector<RE::SpellItem*>>> a_keyTraceMap, IDEvent a_eventID, bool isButtonDown);
+
+
 	void loadInputTraceConfig(const char* a_iniPath);
 	void loadUserInputTraceConfig(CSimpleIniA& a_ini);
 	void loadIDInputTraceConfig(CSimpleIniA& a_ini);
@@ -24,8 +28,8 @@ private:
 	void loadIDInputTraceConfig_Keyboard(CSimpleIniA& a_ini);
 	void loadIDInputTraceConfig_GamePad(CSimpleIniA& a_ini);
 
-	static robin_hood::unordered_map<userInputEvent, std::vector<RE::SpellItem*>> keyTraceMap_userEvent;
-	static robin_hood::unordered_map<IDEvent, std::vector<RE::SpellItem*>> keyTraceMap_EventID_Keyboard;
-	static robin_hood::unordered_map<IDEvent, std::vector<RE::SpellItem*>> keyTraceMap_EventID_Mouse;
-	static robin_hood::unordered_map<IDEvent, std::vector<RE::SpellItem*>> keyTraceMap_EventID_GamePad;
+	std::unordered_map<userInputEvent, std::shared_ptr<std::vector<RE::SpellItem*>>> keyTraceMap_userEvent;
+	std::unordered_map<IDEvent, std::shared_ptr<std::vector<RE::SpellItem*>>> keyTraceMap_EventID_Keyboard;
+	std::unordered_map<IDEvent, std::shared_ptr<std::vector<RE::SpellItem*>>> keyTraceMap_EventID_Mouse;
+	std::unordered_map<IDEvent, std::shared_ptr<std::vector<RE::SpellItem*>>> keyTraceMap_EventID_GamePad;
 };
