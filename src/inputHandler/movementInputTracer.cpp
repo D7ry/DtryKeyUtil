@@ -2,9 +2,12 @@
 #include "settings.h"
 #include "utils.h"
 #include "hasher.hpp"
-#include <math.h>      
+#include <math.h>
+
 #define PI 3.1415926535
 const char* movementInputTraceSettingsDir = "Data\\SKSE\\Plugins\\dtryKeyUtil\\config\\settings.ini";
+
+
 
 void movementInputTracer::loadMovementTraceSpells() {
 	logger::info("loading movement trace spells...");
@@ -32,7 +35,7 @@ void movementInputTracer::onForward(bool activate) {
 	if (activate) {
 		if (settings::bTraceOnlyWhenTargetLock) {//check TDM's target lock
 			auto pc = RE::PlayerCharacter::GetSingleton();
-			if (!pc || !pc->HasMagicEffect(TDM_TargetLockMGEF)) {
+			if (!pc || !pc->AsMagicTarget()->HasMagicEffect(TDM_TargetLockMGEF)) {
 				return;
 			}
 		}
@@ -47,7 +50,7 @@ void movementInputTracer::onBack(bool activate) {
 	if (activate) {
 		if (settings::bTraceOnlyWhenTargetLock) {//check TDM's target lock
 			auto pc = RE::PlayerCharacter::GetSingleton();
-			if (!pc || !pc->HasMagicEffect(TDM_TargetLockMGEF)) {
+			if (!pc || !pc->AsMagicTarget()->HasMagicEffect(TDM_TargetLockMGEF)) {
 				return;
 			}
 		}
@@ -62,7 +65,7 @@ void movementInputTracer::onLeft(bool activate) {
 	if (activate) {
 		if (settings::bTraceOnlyWhenTargetLock) {//check TDM's target lock
 			auto pc = RE::PlayerCharacter::GetSingleton();
-			if (!pc || !pc->HasMagicEffect(TDM_TargetLockMGEF)) {
+			if (!pc || !pc->AsMagicTarget()->HasMagicEffect(TDM_TargetLockMGEF)) {
 				return;
 			}
 		}
@@ -77,7 +80,7 @@ void movementInputTracer::onRight(bool activate) {
 	if (activate) {
 		if (settings::bTraceOnlyWhenTargetLock) {//check TDM's target lock
 			auto pc = RE::PlayerCharacter::GetSingleton();
-			if (!pc || !pc->HasMagicEffect(TDM_TargetLockMGEF)) {
+			if (!pc || !pc->AsMagicTarget()->HasMagicEffect(TDM_TargetLockMGEF)) {
 				return;
 			}
 		}
@@ -145,7 +148,7 @@ movementInputTracer::thumbStickZone movementInputTracer::getThumbStickZone(float
 		}
 
 	}
-	
+	return thumbStickZone::neutral;
 	
 }
 
