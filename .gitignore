@@ -11,3 +11,8 @@ CTestTestfile.cmake
 build
 .clang-format
 .editorconfig
+/.idea
+/.vs
+/cmake-build-debug/.cmake/api/v1/query
+/buildversion.rc
+/version.rc
