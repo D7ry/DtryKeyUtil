@@ -1,13 +1,14 @@
 {
   "name": "dtrykeyutil",
-  "version": "1",
-  "dependencies": [
-    "boost-stl-interfaces",
-    "rsm-binary-io",
-    "simpleini",
-    "spdlog",
-    "xbyak"
-  ],
+  "version": "2",
+    "dependencies": [
+        "boost-stl-interfaces",
+        "rsm-binary-io",
+        "simpleini",
+        "spdlog",
+        "xbyak",
+        "commonlibsse-ng-flatrim"
+    ],
   "builtin-baseline": "1c5939e275082fb6f4b2c8a546cd904b978f55ac",
   "overrides": [
     {
